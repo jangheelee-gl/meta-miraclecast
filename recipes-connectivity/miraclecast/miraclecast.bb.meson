@@ -1,0 +1,60 @@
+DESCRIPTION = "Software to connect external monitors to your system via Wi-Fi."
+HOMEPAGE = "https://github.com/albfan/miraclecast"
+
+LICENSE = "LGPLv2.1 & GPLv2"
+LIC_FILES_CHKSUM = "\
+    file://COPYING;md5=7314adf793af1c4ce355355a659e6891 \
+    file://LICENSE_htable;md5=2d5025d4aa3495befef8f17206a5b0a1 \
+    file://LICENSE_gdhcp;md5=42c8401a5a2eda9c8e4419921d4e8559 \
+    file://LICENSE_lgpl;md5=4fbd65380cdd255951079008b364516c \
+"
+
+
+SRC_URI = "git://github.com/albfan/miraclecast.git;branch=master"
+SRCREV = "210ef327ce61a5d9efc6a1f2b10406dfb27e531f"
+
+S = "${WORKDIR}/git"
+
+inherit meson autotools pkgconfig
+
+#EXTRA_OECONF = ""
+EXTRA_OECONF = "--host=${HOST_SYS} --build=${BUILD_SYS} --target=${TARGET_SYS}"
+
+
+DEPENDS = "glib-2.0 gstreamer1.0 systemd"
+
+RDEPENDS_${PN} += " \
+    bash \
+    iproute2 \
+    gstreamer1.0-libav \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    python3-core \
+"
+
+
+do_configure_prepend() {
+	cd ${WORKDIR}
+	mkdir -p build/meson-logs
+	cd build/meson-logs
+	touch meson-log.txt
+	
+}
+
+do_install_append() {
+	cd ${S}
+	meson ${S}/build --prefix=/usr --sysconfdir=/etc
+	cd build
+	ninja
+	ninja test
+	ninja install
+}
+
+#do_install_append() {
+#	cd ${S}
+#	./autogen.sh g --prefix=/usr
+#	make
+#	make install
+#
+#}
